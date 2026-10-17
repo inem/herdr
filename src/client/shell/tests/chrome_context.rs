@@ -428,6 +428,52 @@ fn global_menu_opens_from_sidebar_and_routes_client_actions() {
 }
 
 #[test]
+fn desktop_menu_creates_on_local_endpoint_and_does_not_send_after_cancel() {
+    if !crate::platform::desktop_chats_supported() {
+        return;
+    }
+    let mut state = ClientShellState::new(ClientShellConfig::from_config(&Config::default()));
+    state.set_snapshot(Box::new(snapshot()));
+    state.set_pane_surface(surface());
+    let index = super::super::global_menu::global_menu_items(&snapshot())
+        .iter()
+        .position(|(_, action)| {
+            *action == super::super::global_menu::ClientGlobalMenuAction::DesktopChats
+        })
+        .expect("desktop menu entry");
+    let mut outcome = ClientShellInput::default();
+    state.activate_global_menu_item(index, &mut outcome);
+    let [ClientShellAction::Endpoint {
+        endpoint_id,
+        request,
+        ..
+    }] = outcome.actions.as_slice()
+    else {
+        panic!("expected public API workspace creation");
+    };
+    assert!(endpoint_id.is_local());
+    assert!(
+        matches!(&request.method, crate::api::schema::Method::WorkspaceCreate(params)
+        if params.label.as_deref() == Some("Desktop chats") && params.focus)
+    );
+    let request_id = request.id.clone();
+    assert!(state.cancel_endpoint_request(&request_id));
+    assert!(!state.pending_requests.contains_key(&request_id));
+
+    state.active_endpoint_id = crate::client::endpoint::ClientEndpointId::Ssh(
+        crate::client::endpoint::SavedSshEndpoint::new("remote", "remote", "default")
+            .unwrap()
+            .id,
+    );
+    let mut remote = ClientShellInput::default();
+    state.activate_global_menu_item(index, &mut remote);
+    assert!(
+        remote.actions.is_empty(),
+        "desktop discovery must never run on SSH"
+    );
+}
+
+#[test]
 fn new_tab_overlay_owns_text_cursor_and_submits_public_api_request() {
     let mut state = ClientShellState::new(ClientShellConfig::from_config(&Config::default()));
     state.set_snapshot(Box::new(snapshot()));

@@ -630,6 +630,7 @@ fn main() -> io::Result<()> {
         println!("       herdr pane <subcommand> ...");
         println!("       herdr session <subcommand> ...");
         println!("       herdr integration <subcommand> ...");
+        println!("       herdr desktop [pick|open|list|resume] ...");
         println!();
         println!("Common commands:");
         for (command, description) in [
@@ -661,6 +662,10 @@ fn main() -> io::Result<()> {
                 "Manage the stable or preview update channel",
             ),
             ("herdr machine <subcommand>", "Manage saved SSH machines"),
+            (
+                "herdr desktop",
+                "Choose an existing local desktop chat (macOS)",
+            ),
             (
                 "herdr api <subcommand>",
                 "Inspect socket API metadata and live runtime state",

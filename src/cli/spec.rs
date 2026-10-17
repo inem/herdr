@@ -30,6 +30,7 @@ pub(super) fn command() -> Command {
                 .help("Print version and exit"),
         )
         .subcommand(completion::command())
+        .subcommand(super::desktop::command())
         .subcommand(update_command())
         .subcommand(status_command())
         .subcommand(config_command())

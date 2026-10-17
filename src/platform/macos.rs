@@ -24,7 +24,9 @@ pub(crate) use super::unix_common::{
 };
 
 mod bootstrap;
+mod desktop;
 pub(crate) use bootstrap::{configure_server_daemon_context, prepare_server_process};
+pub(crate) use desktop::{desktop_chat_command, desktop_picker_shell_command};
 
 mod shutdown;
 pub(crate) use shutdown::monitor_host_shutdown;
