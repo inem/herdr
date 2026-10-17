@@ -1,5 +1,9 @@
 # herdr
 
+This fork adds [existing desktop chats](DESKTOP_CHATS.md) for ChatGPT Work,
+Claude Code and Antigravity App on macOS. Open **desktop chats** in the global
+menu or run `herdr desktop` to continue the original chat.
+
 
 <p align="center">
   <img src="assets/logo.png" alt="herdr" width="100" />

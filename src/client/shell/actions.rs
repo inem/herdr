@@ -568,6 +568,25 @@ impl ClientShellState {
         }
         match pending.kind {
             PendingEndpointKind::Generic => {}
+            PendingEndpointKind::DesktopPicker { command } => {
+                let mut outcome = ClientShellInput::default();
+                if let Ok(crate::api::schema::ResponseResult::WorkspaceCreated {
+                    root_pane, ..
+                }) = result
+                {
+                    self.push_endpoint_method(
+                        crate::api::schema::Method::PaneSendInput(
+                            crate::api::schema::PaneSendInputParams {
+                                pane_id: root_pane.pane_id,
+                                text: command,
+                                keys: vec!["Enter".into()],
+                            },
+                        ),
+                        &mut outcome,
+                    );
+                }
+                return (true, outcome.actions);
+            }
             PendingEndpointKind::PaneLinkResolve { .. } => unreachable!("handled above"),
             PendingEndpointKind::ProductAnnouncementDismiss { version, id } => {
                 return match result {

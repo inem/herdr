@@ -3,6 +3,24 @@
 //! Centralizes OS-dependent behavior behind a clean boundary so core
 //! modules don't scatter `#[cfg]` branches through product logic.
 
+pub(crate) const fn desktop_chats_supported() -> bool {
+    cfg!(target_os = "macos")
+}
+
+#[cfg(not(target_os = "macos"))]
+pub(crate) fn desktop_chat_command() -> std::io::Result<std::process::Command> {
+    Err(std::io::Error::other(
+        "Desktop chats currently support macOS only",
+    ))
+}
+
+#[cfg(not(target_os = "macos"))]
+pub(crate) fn desktop_picker_shell_command() -> std::io::Result<String> {
+    Err(std::io::Error::other(
+        "Desktop chats currently support macOS only",
+    ))
+}
+
 #[cfg(unix)]
 pub(crate) mod ssh_agent;
 

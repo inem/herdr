@@ -619,6 +619,9 @@ impl ClientShellOverlay {
 #[derive(Debug)]
 pub(super) enum PendingEndpointKind {
     Generic,
+    DesktopPicker {
+        command: String,
+    },
     ProductAnnouncementDismiss {
         version: String,
         id: String,

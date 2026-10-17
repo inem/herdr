@@ -4,6 +4,7 @@ use super::*;
 pub(super) enum ClientGlobalMenuAction {
     Binding(crate::input::KeybindAction),
     WhatsNew,
+    DesktopChats,
 }
 
 pub(super) fn global_menu_attention(snapshot: &ClientShellSnapshot) -> bool {
@@ -50,6 +51,9 @@ pub(super) fn global_menu_items(
         "detach",
         ClientGlobalMenuAction::Binding(crate::input::KeybindAction::Detach),
     ));
+    if crate::platform::desktop_chats_supported() {
+        items.push(("desktop chats", ClientGlobalMenuAction::DesktopChats));
+    }
     items
 }
 
@@ -104,7 +108,45 @@ impl ClientShellState {
                 self.record_binding(crate::input::KeybindMatch::Action(binding), outcome)
             }
             ClientGlobalMenuAction::WhatsNew => self.open_release_notes(),
+            ClientGlobalMenuAction::DesktopChats => self.open_desktop_picker(outcome),
         }
         outcome.repaint = true;
+    }
+
+    fn open_desktop_picker(&mut self, outcome: &mut ClientShellInput) {
+        if !self.active_endpoint_id.is_local() {
+            self.push_endpoint_notice(
+                ClientEndpointNoticeKind::Unsupported,
+                "desktop-local",
+                "Desktop chats",
+                "Select the Local machine to open its desktop chats.",
+            );
+            return;
+        }
+        let command = match crate::platform::desktop_picker_shell_command() {
+            Ok(command) => command,
+            Err(error) => {
+                self.push_endpoint_notice(
+                    ClientEndpointNoticeKind::Rejected,
+                    "desktop-launch",
+                    "Desktop chats",
+                    error.to_string(),
+                );
+                return;
+            }
+        };
+        self.push_endpoint_method_with_kind(
+            crate::api::schema::Method::WorkspaceCreate(
+                crate::api::schema::WorkspaceCreateParams {
+                    source_workspace_id: None,
+                    cwd: None,
+                    focus: true,
+                    label: Some("Desktop chats".into()),
+                    env: Default::default(),
+                },
+            ),
+            PendingEndpointKind::DesktopPicker { command },
+            outcome,
+        );
     }
 }
